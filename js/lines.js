@@ -8,7 +8,44 @@
 var drawLines = function(penguins,target,
                          xScale,yScale)
 {
-   
+   var lineGenerator = d3.line()
+    .x(function(quiz,i)
+      {
+       return xScale(i)})
+    .y(function(quiz)
+      {
+           return yScale(quiz.grade)
+       })
+    
+       
+    var lines = d3.select("svg")
+    .select("#graph")
+    .selectAll("g")
+    .data(penguins)
+    .enter()
+    .append("g")
+    .classed("line",true)
+    .attr("fill","none")
+.on("mouseover" ,function(penguins)
+      {
+        
+      var xPos = d3.event.pageX;
+      var yPos = d3.event.pageY;
+      
+        d3.select("#tooltip")
+        .classed("hidden",false)
+    .classed("selected",true)
+        .style("top",yPos+"px")
+        .style("left",xPos+"px")
+        d3.select("img")
+        .attr("src","imgs/"+penguins.picture);
+      })
+lines.append("path")
+.datum(function(penguins)
+        {
+    return penguins.quizes;
+})
+.attr("d",lineGenerator)
 }
 
 
@@ -24,8 +61,20 @@ var makeTranslateString = function(x,y)
 var drawAxes = function(graphDim,margins,
                          xScale,yScale)
 {
-   
- 
+    var xAxis = d3.axisBottom(xScale);
+    var yAxis = d3.axisLeft(yScale);
+    
+    d3.select("svg")
+    .append("g")
+    .classed("axis",true)
+    .attr("transform", makeTranslateString(margins.left,margins.top+graphDim.height))
+    .call(xAxis)
+    
+    d3.select("svg")
+    .append("g")
+    .classed("axis",true)
+    .attr("transform", makeTranslateString(margins.left,margins.top))
+    .call(yAxis)
 }
 
 
@@ -33,7 +82,31 @@ var drawAxes = function(graphDim,margins,
 //margins - object that stores the size of the margins
 var drawLabels = function(graphDim,margins)
 {
+    var labels = d3.select("svg")
+    .append("g")
+    .classed("labels", true)
     
+    labels.append("text")
+    .text("Quiz Grades")
+    .classed("title",true)
+    .attr("text-anchor","middle")
+    .attr("x",margins.left+(graphDim.width/2))
+    .attr("y",margins.top)
+    
+    labels.append("text")
+    .text("Days")
+    .classed("label",true)
+    .attr("text-anchor","middle")
+    .attr("x",margins.left+(graphDim.width/2))
+    .attr("y",595)
+    
+    labels.append("g")
+    .attr("transform",makeTranslateString(20,margins.top+(graphDim.height/2)))
+    .append("text")
+    .text("Quiz Grade")
+    .classed("label",true)
+    .attr("text-anchor","middle")
+    .attr("transform","rotate(270)")
 }
 
 
@@ -43,9 +116,9 @@ var drawLabels = function(graphDim,margins)
 var initGraph = function(penguins)
 {
     //size of screen
-    var screen = {width:800,height:600}
+    var screen = {width:900,height:600}
     //how much space on each side
-    var margins = {left:30,right:20,top:20,bottom:30}
+    var margins = {left:40,right:20,top:30,bottom:30}
     
     
     
@@ -62,7 +135,7 @@ var initGraph = function(penguins)
     
     var target = d3.select("svg")
     .append("g")
-    .attr("id","#graph")
+    .attr("id","graph")
     .attr("transform",
           "translate("+margins.left+","+
                         margins.top+")");
@@ -72,8 +145,8 @@ var initGraph = function(penguins)
                         {return quiz.day});
     
     var xScale = d3.scaleLinear()
-        .domain([1,maxDay])
-        .range([0,graph.width])
+        .domain([0,maxDay])
+        .range([1,graph.width])
 
     var yScale = d3.scaleLinear()
         .domain([0,10])
